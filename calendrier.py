@@ -1,6 +1,12 @@
 #importe uno
 import uno
+from re import sub
 
+def test():
+    document = XSCRIPTCONTEXT.getDocument()
+    feuille = getSheetByName(document, "Legumes")
+    dictionnaire = dictionnaireLegumes(feuille)
+    feuille.getCellByPosition(0,0).String = ' | '.join(dictionnaire.keys())
 
 colonneLegume = 3
 def calendrier():
@@ -63,3 +69,60 @@ def remplirFeuille(feuille, calendrier):
         feuille.getCellByPosition(0, line).Value = key
         feuille.getCellByPosition(1, line).String = " | ".join(calendrier[key])
         line +=1
+
+class Legume:
+    def __init__(self, \
+                 nom,\
+                 multicellules,\
+                 joursEnCellules,\
+                 recolte,\
+                 nombreRecolte,\
+                 nombreRang,\
+                 espacement,\
+                 quantitePlanche):
+        self.nom = nom
+        self.multicellules = multicellules
+        self.joursEnCellules = joursEnCellules
+        self.recolte = recolte
+        self.nombreRecolte = nombreRecolte
+        self.nombreRang = nombreRang
+        self.espacement = espacement
+        self.quantitePlanche = quantitePlanche
+
+
+def standardisationNom(nom):
+    return sub('[^a-z]', '', nom.lower())
+
+def dictionnaireLegumes(feuille):
+    #configuration de la feuille
+    colonneNom = 0
+    colonneMultiCellule = 1
+    colonneJoursEnCellules = 2
+    colonneRecolte = 3
+    colonneNombreRecolte = 4
+    colonneNombreRang = 5
+    colonneEspacement = 6
+    colonneQuantitePlanche = 8
+
+    #Parcours de la feuille et génération du bouzin
+    dictionnaire = {}
+
+    ligne = 1
+    while feuille.getCellByPosition(colonneNom, ligne).String != "":
+        dictionnaire[standardisationNom(feuille.getCellByPosition(colonneNom, ligne).String)] = \
+                     Legume(\
+                        feuille.getCellByPosition(colonneNom, ligne).String,\
+                        feuille.getCellByPosition(colonneMultiCellule, ligne).String,\
+                        feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,\
+                        feuille.getCellByPosition(colonneRecolte, ligne).String,\
+                        feuille.getCellByPosition(colonneNombreRecolte, ligne).String,\
+                        feuille.getCellByPosition(colonneNombreRang, ligne).String,\
+                        feuille.getCellByPosition(colonneEspacement, ligne).String,\
+                        feuille.getCellByPosition(colonneQuantitePlanche, ligne).String\
+                    )
+        ligne += 1
+    return dictionnaire
+
+    
+        
+
