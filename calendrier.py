@@ -1,25 +1,22 @@
 #importe uno
 import uno
 from re import sub
-
-def test():
-    document = XSCRIPTCONTEXT.getDocument()
-    feuille = getSheetByName(document, "Legumes")
-    dictionnaire = dictionnaireLegumes(feuille)
-    feuille.getCellByPosition(0,0).String = ' | '.join(dictionnaire.keys())
+from datetime import *
 
 colonneLegume = 3
 def calendrier():
     # récupère le document actif
     document = XSCRIPTCONTEXT.getDocument()
-    # prépare le travail sur les feuilles
+
+    # Crée les différentes feuilles
     feuilleDate = getSheetByName(document, "Plan de jardin")
     feuilleLegume = getSheetByName(document, 'Legumes')
     feuilleSemi = getSheetByName(document, "Calendrier semis")
     feuilleCommande = getSheetByName(document, "Calendrier commandes")
-    feuillePrepaPlanche = getSheetByName(document, "Calendrier prépa planches")
+    feuillePrepaPlanche = getSheetByName(document, "Calendrier prepa planches")
     feuilleTransplant = getSheetByName(document, "Calendrier transplant")
-    feuilleRecolte = getSheetByName(document, "Calendrier récolte")
+    feuilleRecolte = getSheetByName(document, "Calendrier recolte")
+    feuilleRecapCalendrier = getSheetByName(document, "Calendrier - Recap")
 
     calendrierSemi = {}
     calendrierCommande = {}
@@ -39,12 +36,59 @@ def calendrier():
         remplirCalendrier(planche, calendrierTransplant, "transplant")
         remplirCalendrier(planche, calendrierRecolte, "premiereRecolte")
 
+    def names(l):
+        for planche in l:
+            yield planche.legume.nom
+    def plancheAndNames(l):
+        for planche in l:
+            yield planche.getId() + '-' + planche.legume.nom
+
     #Remplissage des feuilles
-    remplirFeuille(feuilleSemi,calendrierSemi)
-    remplirFeuille(feuilleCommande,calendrierCommande)
-    remplirFeuille(feuillePrepaPlanche,calendrierPrepaPlanche)
-    remplirFeuille(feuilleTransplant,calendrierTransplant)
-    remplirFeuille(feuilleRecolte,calendrierRecolte)
+    remplirFeuille(feuilleSemi,calendrierSemi, names)
+    remplirFeuille(feuilleCommande,calendrierCommande, names)
+    remplirFeuille(feuillePrepaPlanche,calendrierPrepaPlanche, plancheAndNames)
+    remplirFeuille(feuilleTransplant,calendrierTransplant, plancheAndNames)
+    remplirFeuille(feuilleRecolte,calendrierRecolte, plancheAndNames)
+
+
+    #Remplissage des données fixes de la feuille de recap
+    feuilleRecapCalendrier.getCellRangeByName("A1:G1000").clearContents(7)
+
+    #Recuperer la valeure du premier lundi de l'année pour Ooo
+    firstMonday = next_weekday(date(2017, 1, 1), 0)
+    feuilleRecapCalendrier.getCellByPosition(0, 0).setFormula(str(firstMonday.year)+"-"+str(firstMonday.month)+"-"+str(firstMonday.day))
+    firstMonday = feuilleRecapCalendrier.getCellByPosition(0, 0).Value
+    feuilleRecapCalendrier.getCellByPosition(0, 0).String = ""
+
+    #Ecriture des colonnes
+    feuilleRecapCalendrier.getCellByPosition(1, 0).String ="Commandes"
+    feuilleRecapCalendrier.getCellByPosition(2, 0).String ="Semis"
+    feuilleRecapCalendrier.getCellByPosition(3, 0).String ="PrepaPlanche"
+    feuilleRecapCalendrier.getCellByPosition(4, 0).String ="Transplant"
+    feuilleRecapCalendrier.getCellByPosition(5, 0).String ="Recolte"
+
+    #Pour toutes les semaines de l'année
+    for week in range(52):
+        lineShift = week*10+1
+        feuilleRecapCalendrier.getCellByPosition(0, lineShift).String = "Semaine "+str(week+1)
+        for day in range(1, 8):
+            currentDay = firstMonday+week*7+day-1
+            feuilleRecapCalendrier.getCellByPosition(0, lineShift+day).Value = currentDay
+
+            def checkCalendrierAndDisplay(calendrier, colonneShift, fonctionAffichage):
+                if currentDay in calendrier:
+                    feuilleRecapCalendrier.getCellByPosition(colonneShift, lineShift+day).setFormula("\n".join(fonctionAffichage(calendrier[currentDay])))
+
+            checkCalendrierAndDisplay(calendrierCommande, 1, names)
+            checkCalendrierAndDisplay(calendrierSemi, 2, names)
+            checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
+            checkCalendrierAndDisplay(calendrierTransplant, 4, plancheAndNames)
+            checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
+
+    for row in feuilleRecapCalendrier.getCellRangeByName("A1:A400").getRows():
+        row.OptimalHeight = True
+    for column in feuilleRecapCalendrier.getCellRangeByName("A1:H1").getColumns():
+        column.OptimalWidth = True
 
 def getSheetByName(document, name):
     if document.Sheets.hasByName(name):
@@ -60,17 +104,14 @@ def remplirCalendrier(planche, calendrier, colonne):
         else:
             calendrier[date] = [planche]    
 
-def remplirFeuille(feuille, calendrier):
+def remplirFeuille(feuille, calendrier, aAfficher):
     feuille.getCellRangeByName("A2:B365").clearContents(7)
     line = 1
     for key in sorted(calendrier.keys()):
         feuille.getCellByPosition(0, line).Value = key
         value = ""
-        def names(l):
-            for planche in l:
-                yield planche.legume.nom
 
-        feuille.getCellByPosition(1, line).String = " | ".join(names(calendrier[key]))
+        feuille.getCellByPosition(1, line).String = " | ".join(aAfficher(calendrier[key]))
         line +=1
 
 class Legume:
@@ -113,7 +154,7 @@ class Planche:
         self.transplant = float(transplant)
         self.premiereRecolte = float(premiereRecolte)
     def getId(self):
-        return self.bloc+'-'+self.planche+'-'+self.preparation
+        return str(self.bloc)+'-'+str(self.planche)+'-'+str(self.iteration)
     
 def standardisationNom(nom):
     return sub('[^a-z]', '', nom.lower())
@@ -185,6 +226,10 @@ def listePlanche(feuille, dictionnaireLegume):
         ligne += 1
     return planches
 
-    
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead < 0: # Target day already past this week
+        days_ahead += 7
+    return d + timedelta(days_ahead)
         
 
