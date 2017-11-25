@@ -19,14 +19,7 @@ def calendrier():
     feuilleDate = getSheetByName(document, "Plan de jardin")
     feuilleVariables = getSheetByName(document, "Variables")
     feuilleLegume = getSheetByName(document, 'Legumes')
-    feuilleSemi = getSheetByName(document, "Calendrier semis")
-    feuilleCommande = getSheetByName(document, "Calendrier commandes")
-    feuillePrepaPlanche = getSheetByName(document, "Calendrier prepa planches")
-    feuilleTransplant = getSheetByName(document, "Calendrier transplant")
-    feuilleRecolte = getSheetByName(document, "Calendrier recolte")
     feuilleRecapCalendrier = getSheetByName(document, "Calendrier - Recap")
-
-    listeFeuillesCalendrier = [feuilleSemi, feuilleCommande, feuillePrepaPlanche, feuilleTransplant, feuilleRecolte, feuilleRecapCalendrier]
 
     calendrierSemi = {}
     calendrierCommande = {}
@@ -72,26 +65,6 @@ def calendrier():
         for planche in l:
             yield planche.getId() + '-' + planche.legume.nom
 
-    #Remplissage des feuilles
-
-
-    def remplirFeuille(feuille, calendrier, aAfficher):
-        feuille.getCellRangeByName("A2:B365").clearContents(7)
-        line = 1
-        for key in sorted(calendrier.keys()):
-            feuille.getCellByPosition(0, line).Value = key
-            feuille.getCellByPosition(0, line).NumberFormat = variables['dateFormatId']
-
-            feuille.getCellByPosition(1, line).String = "\n".join(aAfficher(calendrier[key]))
-            line +=1
-
-    remplirFeuille(feuilleSemi,calendrierSemi, names)
-    remplirFeuille(feuilleCommande,calendrierCommande, names)
-    remplirFeuille(feuillePrepaPlanche,calendrierPrepaPlanche, plancheAndNames)
-    remplirFeuille(feuilleTransplant,calendrierTransplant, plancheAndNames)
-    remplirFeuille(feuilleRecolte,calendrierRecolte, plancheAndNames)
-
-
     #Remplissage des données fixes de la feuille de recap
     feuilleRecapCalendrier.getCellRangeByName("A1:G1000").clearContents(7)
 
@@ -121,13 +94,6 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheAndNames)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
-
-    #Ajustement des lignes et colonnes pour les calendriers
-    for feuilleCalendrier in listeFeuillesCalendrier:
-        for row in feuilleCalendrier.getCellRangeByName("A1:A400").getRows():
-            row.OptimalHeight = True
-        for column in feuilleCalendrier.getCellRangeByName("A1:H1").getColumns():
-            column.OptimalWidth = True
 
 class Legume:
     def __init__(self, \
