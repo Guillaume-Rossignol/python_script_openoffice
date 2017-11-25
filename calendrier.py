@@ -51,12 +51,20 @@ def calendrier():
             else:
                 calendrier[date] = [planche]
 
+    def remplirCalendrierRecolte(planche, calendrier):
+        dates = planche.getListeRecolte()
+        for date in dates:
+            if date in calendrier:
+                calendrier[date].append(planche)
+            else:
+                calendrier[date] = [planche]
+
     for planche in planches:
         remplirCalendrier(planche, calendrierSemi, "semi")
         remplirCalendrier(planche, calendrierCommande, "commande")
         remplirCalendrier(planche, calendrierPrepaPlanche, "preparation")
         remplirCalendrier(planche, calendrierTransplant, "transplant")
-        remplirCalendrier(planche, calendrierRecolte, "premiereRecolte")
+        remplirCalendrierRecolte(planche, calendrierRecolte)
 
     def names(l):
         for planche in l:
@@ -136,7 +144,14 @@ class Planche:
         self.premiereRecolte = float(premiereRecolte)
     def getId(self):
         return str(self.bloc)+'-'+str(self.planche)+'-'+str(self.iteration)
-    
+
+    def getListeRecolte(self):
+        listeRecolte = []
+        for indiceRecolte in range(self.legume.nombreRecolte):
+            #Pour l'instant la fréquence de récolte est forcement 7 jours
+            listeRecolte.append(self.premiereRecolte + 7*indiceRecolte)
+        return listeRecolte
+
 def standardisationNom(nom):
     return sub('[^a-z]', '', nom.lower())
 
@@ -162,7 +177,7 @@ def dictionnaireLegumes(feuille):
                         feuille.getCellByPosition(colonneMultiCellule, ligne).String,\
                         feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,\
                         feuille.getCellByPosition(colonneRecolte, ligne).String,\
-                        feuille.getCellByPosition(colonneNombreRecolte, ligne).String,\
+                        int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),\
                         feuille.getCellByPosition(colonneNombreRang, ligne).String,\
                         feuille.getCellByPosition(colonneEspacement, ligne).String,\
                         feuille.getCellByPosition(colonneQuantitePlanche, ligne).String\
@@ -191,7 +206,7 @@ def listePlanche(feuille, dictionnaireLegume):
         if standardisationNom(nomLegume) in dictionnaireLegume:
             legume = dictionnaireLegume[standardisationNom(nomLegume)]
         else:
-            legume = Legume(nomLegume,0,0,0,0,0,0,0)
+            legume = Legume(nomLegume, 0, 0, 0, 1, 0, 0, 0)
 
         planches.append(Planche(legume,
             feuille.getCellByPosition(colonneBloc, ligne).String,
