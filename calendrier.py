@@ -8,8 +8,16 @@ def calendrier():
     # récupère le document actif
     document = XSCRIPTCONTEXT.getDocument()
 
-    # Crée les différentes feuilles
+
+    # Crée et récupere les différentes feuilles
+    def getSheetByName(document, name):
+        if document.Sheets.hasByName(name):
+            return document.Sheets.getByName(name)
+        document.Sheets.insertNewByName(name, 0)
+        return document.Sheets.getByName(name)
+
     feuilleDate = getSheetByName(document, "Plan de jardin")
+    feuilleVariables = getSheetByName(document, "Variables")
     feuilleLegume = getSheetByName(document, 'Legumes')
     feuilleSemi = getSheetByName(document, "Calendrier semis")
     feuilleCommande = getSheetByName(document, "Calendrier commandes")
@@ -18,16 +26,37 @@ def calendrier():
     feuilleRecolte = getSheetByName(document, "Calendrier recolte")
     feuilleRecapCalendrier = getSheetByName(document, "Calendrier - Recap")
 
+    listeFeuillesCalendrier = [feuilleSemi, feuilleCommande, feuillePrepaPlanche, feuilleTransplant, feuilleRecolte, feuilleRecapCalendrier]
+
     calendrierSemi = {}
     calendrierCommande = {}
     calendrierPrepaPlanche = {}
     calendrierTransplant = {}
     calendrierRecolte = {}
+    variables = {}
 
     legumes = dictionnaireLegumes(feuilleLegume)
     planches = listePlanche(feuilleDate, legumes)
 
 
+    variables['dateFormatId'] = feuilleVariables.getCellByPosition(1, 1).NumberFormat
+    variables['annee'] = int(feuilleVariables.getCellByPosition(1, 2).Value)
+
+    #Trick : Recuperer la valeure du premier lundi de l'année pour Ooo
+    firstMonday = next_weekday(date(variables['annee'], 1, 1), 0)
+    feuilleRecapCalendrier.getCellByPosition(0, 0).setFormula(str(firstMonday.year)+"-"+str(firstMonday.month)+"-"+str(firstMonday.day))
+    firstMonday = feuilleRecapCalendrier.getCellByPosition(0, 0).Value
+    #Clean de la feuille
+    feuilleRecapCalendrier.getCellByPosition(0, 0).String = ""
+
+    def remplirCalendrier(planche, calendrier, colonne):
+        date = getattr(planche, colonne)
+        # Petit workaround pour créer les listes ou les appends dans les dictionnaires
+        if date > 0:
+            if date in calendrier:
+                calendrier[date].append(planche)
+            else:
+                calendrier[date] = [planche]
 
     for planche in planches:
         remplirCalendrier(planche, calendrierSemi, "semi")
@@ -44,6 +73,18 @@ def calendrier():
             yield planche.getId() + '-' + planche.legume.nom
 
     #Remplissage des feuilles
+
+
+    def remplirFeuille(feuille, calendrier, aAfficher):
+        feuille.getCellRangeByName("A2:B365").clearContents(7)
+        line = 1
+        for key in sorted(calendrier.keys()):
+            feuille.getCellByPosition(0, line).Value = key
+            feuille.getCellByPosition(0, line).NumberFormat = variables['dateFormatId']
+
+            feuille.getCellByPosition(1, line).String = "\n".join(aAfficher(calendrier[key]))
+            line +=1
+
     remplirFeuille(feuilleSemi,calendrierSemi, names)
     remplirFeuille(feuilleCommande,calendrierCommande, names)
     remplirFeuille(feuillePrepaPlanche,calendrierPrepaPlanche, plancheAndNames)
@@ -54,11 +95,6 @@ def calendrier():
     #Remplissage des données fixes de la feuille de recap
     feuilleRecapCalendrier.getCellRangeByName("A1:G1000").clearContents(7)
 
-    #Recuperer la valeure du premier lundi de l'année pour Ooo
-    firstMonday = next_weekday(date(2017, 1, 1), 0)
-    feuilleRecapCalendrier.getCellByPosition(0, 0).setFormula(str(firstMonday.year)+"-"+str(firstMonday.month)+"-"+str(firstMonday.day))
-    firstMonday = feuilleRecapCalendrier.getCellByPosition(0, 0).Value
-    feuilleRecapCalendrier.getCellByPosition(0, 0).String = ""
 
     #Ecriture des colonnes
     feuilleRecapCalendrier.getCellByPosition(1, 0).String ="Commandes"
@@ -74,6 +110,7 @@ def calendrier():
         for day in range(1, 8):
             currentDay = firstMonday+week*7+day-1
             feuilleRecapCalendrier.getCellByPosition(0, lineShift+day).Value = currentDay
+            feuilleRecapCalendrier.getCellByPosition(0, lineShift + day).NumberFormat = variables['dateFormatId']
 
             def checkCalendrierAndDisplay(calendrier, colonneShift, fonctionAffichage):
                 if currentDay in calendrier:
@@ -85,34 +122,12 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheAndNames)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
 
-    for row in feuilleRecapCalendrier.getCellRangeByName("A1:A400").getRows():
-        row.OptimalHeight = True
-    for column in feuilleRecapCalendrier.getCellRangeByName("A1:H1").getColumns():
-        column.OptimalWidth = True
-
-def getSheetByName(document, name):
-    if document.Sheets.hasByName(name):
-        return document.Sheets.getByName(name)
-    document.Sheets.insertNewByName(name,0)
-
-def remplirCalendrier(planche, calendrier, colonne):
-    date = getattr(planche, colonne)
-    #Petit workaround pour créer les listes ou les appends dans les dictionnaires
-    if date > 0:
-        if date in calendrier:
-            calendrier[date].append(planche)
-        else:
-            calendrier[date] = [planche]    
-
-def remplirFeuille(feuille, calendrier, aAfficher):
-    feuille.getCellRangeByName("A2:B365").clearContents(7)
-    line = 1
-    for key in sorted(calendrier.keys()):
-        feuille.getCellByPosition(0, line).Value = key
-        value = ""
-
-        feuille.getCellByPosition(1, line).String = " | ".join(aAfficher(calendrier[key]))
-        line +=1
+    #Ajustement des lignes et colonnes pour les calendriers
+    for feuilleCalendrier in listeFeuillesCalendrier:
+        for row in feuilleCalendrier.getCellRangeByName("A1:A400").getRows():
+            row.OptimalHeight = True
+        for column in feuilleCalendrier.getCellRangeByName("A1:H1").getColumns():
+            column.OptimalWidth = True
 
 class Legume:
     def __init__(self, \
