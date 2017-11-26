@@ -114,15 +114,15 @@ class Legume:
     def __init__(
             self,
             nom,
-            multicellules,
-            joursEnCellules,
-            recolte,
-            nombreRecolte,
-            nombreRang,
-            espacement,
-            quantitePlanche,
-            packsPlanche,
-            plateauxPlanche
+            multicellules = 0,
+            joursEnCellules = 0,
+            recolte = 0,
+            nombreRecolte =1,
+            nombreRang = 1,
+            espacement = 30,
+            quantitePlanche = 0,
+            packsPlanche = 0,
+            plateauxPlanche = 0
             ):
         self.nom = nom
         self.multicellules = multicellules
@@ -136,16 +136,17 @@ class Legume:
         self.plateauxPlanche = plateauxPlanche
 
 class Planche:
-    def __init__(self,\
-                 legume,\
-                 bloc,\
-                 planche,\
-                 iteration,\
-                 commande,\
-                 semi,\
-                 preparation,\
-                 transplant,\
-                 premiereRecolte):
+    def __init__(self,
+                 legume,
+                 bloc,
+                 planche,
+                 iteration,
+                 commande,
+                 semi,
+                 preparation,
+                 transplant,
+                 premiereRecolte
+                 ):
         self.legume = legume
         self.bloc = bloc
         self.planche = planche
@@ -223,7 +224,7 @@ def listePlanche(feuille, dictionnaireLegume):
         if standardisationNom(nomLegume) in dictionnaireLegume:
             legume = dictionnaireLegume[standardisationNom(nomLegume)]
         else:
-            legume = Legume(nomLegume, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+            legume = Legume(nomLegume)
 
         planches.append(Planche(legume,
             feuille.getCellByPosition(colonneBloc, ligne).String,
