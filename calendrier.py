@@ -66,9 +66,16 @@ def calendrier():
         remplirCalendrier(planche, calendrierTransplant, "transplant")
         remplirCalendrierRecolte(planche, calendrierRecolte)
 
-    def names(l):
+    # Fonctions utilisées pour affichers les planches dans le tableau de récap
+    def plancheNamesPlateaux(l):
         for planche in l:
-            yield planche.legume.nom
+            yield planche.getId() + '-' + planche.legume.nom + "(" + str(planche.legume.plateauxPlanche)  + ")"
+    def namesAndPacks(l):
+        for planche in l:
+            yield planche.legume.nom + " " +str(planche.legume.packsPlanche) + " packs"
+    def namesAndSemi(l):
+        for planche in l:
+            yield planche.legume.nom + "(" + planche.legume.quantitePlanche + ")"
     def plancheAndNames(l):
         for planche in l:
             yield planche.getId() + '-' + planche.legume.nom
@@ -97,22 +104,26 @@ def calendrier():
                 if currentDay in calendrier:
                     feuilleRecapCalendrier.getCellByPosition(colonneShift, lineShift+day).setFormula("\n".join(fonctionAffichage(calendrier[currentDay])))
 
-            checkCalendrierAndDisplay(calendrierCommande, 1, names)
-            checkCalendrierAndDisplay(calendrierSemi, 2, names)
+            checkCalendrierAndDisplay(calendrierCommande, 1, namesAndPacks)
+            checkCalendrierAndDisplay(calendrierSemi, 2, namesAndPacks)
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
-            checkCalendrierAndDisplay(calendrierTransplant, 4, plancheAndNames)
+            checkCalendrierAndDisplay(calendrierTransplant, 4, plancheNamesPlateaux)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
 
 class Legume:
-    def __init__(self, \
-                 nom,\
-                 multicellules,\
-                 joursEnCellules,\
-                 recolte,\
-                 nombreRecolte,\
-                 nombreRang,\
-                 espacement,\
-                 quantitePlanche):
+    def __init__(
+            self,
+            nom,
+            multicellules,
+            joursEnCellules,
+            recolte,
+            nombreRecolte,
+            nombreRang,
+            espacement,
+            quantitePlanche,
+            packsPlanche,
+            plateauxPlanche
+            ):
         self.nom = nom
         self.multicellules = multicellules
         self.joursEnCellules = joursEnCellules
@@ -121,6 +132,8 @@ class Legume:
         self.nombreRang = nombreRang
         self.espacement = espacement
         self.quantitePlanche = quantitePlanche
+        self.packsPlanche = packsPlanche
+        self.plateauxPlanche = plateauxPlanche
 
 class Planche:
     def __init__(self,\
@@ -164,7 +177,9 @@ def dictionnaireLegumes(feuille):
     colonneNombreRecolte = 4
     colonneNombreRang = 5
     colonneEspacement = 6
-    colonneQuantitePlanche = 8
+    colonneQuantitePlanche = 9
+    colonnePacksPlanche = 8
+    colonnePlateauxPlanche = 10
 
     #Parcours de la feuille et génération du bouzin
     dictionnaire = {}
@@ -172,15 +187,17 @@ def dictionnaireLegumes(feuille):
     ligne = 1
     while feuille.getCellByPosition(colonneNom, ligne).String != "":
         dictionnaire[standardisationNom(feuille.getCellByPosition(colonneNom, ligne).String)] = \
-                     Legume(\
-                        feuille.getCellByPosition(colonneNom, ligne).String,\
-                        feuille.getCellByPosition(colonneMultiCellule, ligne).String,\
-                        feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,\
-                        feuille.getCellByPosition(colonneRecolte, ligne).String,\
-                        int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),\
-                        feuille.getCellByPosition(colonneNombreRang, ligne).String,\
-                        feuille.getCellByPosition(colonneEspacement, ligne).String,\
-                        feuille.getCellByPosition(colonneQuantitePlanche, ligne).String\
+                     Legume(
+                        feuille.getCellByPosition(colonneNom, ligne).String,
+                        feuille.getCellByPosition(colonneMultiCellule, ligne).String,
+                        feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,
+                        feuille.getCellByPosition(colonneRecolte, ligne).String,
+                        int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),
+                        feuille.getCellByPosition(colonneNombreRang, ligne).String,
+                        feuille.getCellByPosition(colonneEspacement, ligne).String,
+                        feuille.getCellByPosition(colonneQuantitePlanche, ligne).String,
+                        feuille.getCellByPosition(colonnePacksPlanche, ligne).String,
+                        feuille.getCellByPosition(colonnePlateauxPlanche, ligne).String
                     )
         ligne += 1
     return dictionnaire
@@ -206,7 +223,7 @@ def listePlanche(feuille, dictionnaireLegume):
         if standardisationNom(nomLegume) in dictionnaireLegume:
             legume = dictionnaireLegume[standardisationNom(nomLegume)]
         else:
-            legume = Legume(nomLegume, 0, 0, 0, 1, 0, 0, 0)
+            legume = Legume(nomLegume, 0, 0, 0, 1, 0, 0, 0, 0, 0)
 
         planches.append(Planche(legume,
             feuille.getCellByPosition(colonneBloc, ligne).String,
