@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #importe uno
 import uno
 from re import sub
@@ -246,4 +247,6 @@ def next_weekday(d, weekday):
         days_ahead += 7
     return d + timedelta(days_ahead)
         
-
+def createUnoService(service):
+    ctx = uno.getComponentContext()
+    return ctx.ServiceManager.createInstanceWithContext(service, ctx)
