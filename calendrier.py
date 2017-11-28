@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 #importe uno
 import uno
-from re import sub
 from datetime import *
+from legume import *
+from planche import *
 
 colonneLegume = 3
 def calendrier():
@@ -110,136 +111,6 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheNamesPlateaux)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
-
-class Legume:
-    def __init__(
-            self,
-            nom,
-            multicellules = 0,
-            joursEnCellules = 0,
-            recolte = 0,
-            nombreRecolte =1,
-            nombreRang = 1,
-            espacement = 30,
-            quantitePlanche = 0,
-            packsPlanche = 0,
-            plateauxPlanche = 0
-            ):
-        self.nom = nom
-        self.multicellules = multicellules
-        self.joursEnCellules = joursEnCellules
-        self.recolte = recolte
-        self.nombreRecolte = nombreRecolte
-        self.nombreRang = nombreRang
-        self.espacement = espacement
-        self.quantitePlanche = quantitePlanche
-        self.packsPlanche = packsPlanche
-        self.plateauxPlanche = plateauxPlanche
-
-class Planche:
-    def __init__(self,
-                 legume,
-                 bloc,
-                 planche,
-                 iteration,
-                 commande,
-                 semi,
-                 preparation,
-                 transplant,
-                 premiereRecolte
-                 ):
-        self.legume = legume
-        self.bloc = bloc
-        self.planche = planche
-        self.iteration = iteration
-        self.commande = float(commande)
-        self.semi = float(semi)
-        self.preparation = float(preparation)
-        self.transplant = float(transplant)
-        self.premiereRecolte = float(premiereRecolte)
-    def getId(self):
-        return str(self.bloc)+'-'+str(self.planche)+'-'+str(self.iteration)
-
-    def getListeRecolte(self):
-        listeRecolte = []
-        for indiceRecolte in range(self.legume.nombreRecolte):
-            #Pour l'instant la fréquence de récolte est forcement 7 jours
-            listeRecolte.append(self.premiereRecolte + 7*indiceRecolte)
-        return listeRecolte
-
-def standardisationNom(nom):
-    return sub('[^a-z]', '', nom.lower())
-
-def dictionnaireLegumes(feuille):
-    #configuration de la feuille
-    colonneNom = 0
-    colonneMultiCellule = 1
-    colonneJoursEnCellules = 2
-    colonneRecolte = 3
-    colonneNombreRecolte = 4
-    colonneNombreRang = 5
-    colonneEspacement = 6
-    colonneQuantitePlanche = 9
-    colonnePacksPlanche = 8
-    colonnePlateauxPlanche = 10
-
-    #Parcours de la feuille et génération du bouzin
-    dictionnaire = {}
-
-    ligne = 1
-    while feuille.getCellByPosition(colonneNom, ligne).String != "":
-        dictionnaire[standardisationNom(feuille.getCellByPosition(colonneNom, ligne).String)] = \
-                     Legume(
-                        feuille.getCellByPosition(colonneNom, ligne).String,
-                        feuille.getCellByPosition(colonneMultiCellule, ligne).String,
-                        feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,
-                        feuille.getCellByPosition(colonneRecolte, ligne).String,
-                        int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),
-                        feuille.getCellByPosition(colonneNombreRang, ligne).String,
-                        feuille.getCellByPosition(colonneEspacement, ligne).String,
-                        feuille.getCellByPosition(colonneQuantitePlanche, ligne).String,
-                        feuille.getCellByPosition(colonnePacksPlanche, ligne).String,
-                        feuille.getCellByPosition(colonnePlateauxPlanche, ligne).String
-                    )
-        ligne += 1
-    return dictionnaire
-
-def listePlanche(feuille, dictionnaireLegume):
-    #configuration de la feuille
-    colonneBloc = 0
-    colonnePlanche = 1
-    colonneIteration = 2
-    colonneNom = 3
-    colonneCommande = 4
-    colonneSemi = 5
-    colonnePreparation = 6
-    colonneTransplant = 7
-    colonnePremiereRecolte = 8
-
-    #Parcours de la feuille et génération du bouzin
-    planches = []
-
-    ligne = 1
-    while feuille.getCellByPosition(colonneBloc, ligne).String != "":
-        nomLegume = feuille.getCellByPosition(colonneNom, ligne).String
-        if standardisationNom(nomLegume) in dictionnaireLegume:
-            legume = dictionnaireLegume[standardisationNom(nomLegume)]
-        else:
-            legume = Legume(nomLegume)
-
-        planches.append(Planche(legume,
-            feuille.getCellByPosition(colonneBloc, ligne).String,
-            feuille.getCellByPosition(colonnePlanche, ligne).String,
-            feuille.getCellByPosition(colonneIteration, ligne).String,
-            feuille.getCellByPosition(colonneCommande, ligne).Value,
-            feuille.getCellByPosition(colonneSemi, ligne).Value,
-            feuille.getCellByPosition(colonnePreparation, ligne).Value,
-            feuille.getCellByPosition(colonneTransplant, ligne).Value,
-            feuille.getCellByPosition(colonnePremiereRecolte, ligne).Value
-                                ))
-
-        ligne += 1
-    return planches
 
 def next_weekday(d, weekday):
     days_ahead = weekday - d.weekday()
