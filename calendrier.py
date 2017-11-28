@@ -117,7 +117,3 @@ def next_weekday(d, weekday):
     if days_ahead < 0: # Target day already past this week
         days_ahead += 7
     return d + timedelta(days_ahead)
-        
-def createUnoService(service):
-    ctx = uno.getComponentContext()
-    return ctx.ServiceManager.createInstanceWithContext(service, ctx)
