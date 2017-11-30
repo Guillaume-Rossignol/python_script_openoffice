@@ -151,6 +151,13 @@ def calendrier():
     #Pour toutes les semaines de l'année
     for week in range(52):
         lineShift = week*10+1
+        volumeActivite = {
+            1:0,
+            2:0,
+            3:0,
+            4:0,
+            5:0,
+        }
         feuilleRecapCalendrier.getCellByPosition(0, lineShift).String = "Semaine "+str(week+1)
         for day in range(1, 8):
             currentDay = firstMonday+week*7+day-1
@@ -159,6 +166,7 @@ def calendrier():
 
             def checkCalendrierAndDisplay(calendrier, colonneShift, fonctionAffichage):
                 if currentDay in calendrier:
+                    volumeActivite[colonneShift] += sum(1 for x in fonctionAffichage(calendrier[currentDay]))
                     feuilleRecapCalendrier.getCellByPosition(colonneShift, lineShift+day).setFormula("\n".join(fonctionAffichage(calendrier[currentDay])))
 
             checkCalendrierAndDisplay(calendrierCommande, 1, namesAndPacks)
@@ -166,7 +174,9 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheNamesPlateaux)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
-
+        for colonne in range(1,6):
+            feuilleRecapCalendrier.getCellByPosition(colonne, lineShift + 8).setFormula(volumeActivite[colonne])
+        feuilleRecapCalendrier.getCellByPosition(0, lineShift + 8).setFormula(sum(volumeActivite.values()))
     #mise en page
     for row in recapCellRange.getRows():
         row.setPropertyValue('OptimalHeight', True)
