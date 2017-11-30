@@ -17,6 +17,7 @@ class Legume:
             binage = 0,
             notes = "",
             insectes = "",
+            quantitePack = 1,
             ):
         self.nom = nom
         self.multicellules = multicellules
@@ -31,6 +32,7 @@ class Legume:
         self.binage = binage
         self.notes = notes
         self.insectes = insectes
+        self.quantitePack = quantitePack
 
 def dictionnaireLegumes(feuille):
     #configuration de la feuille
@@ -41,6 +43,7 @@ def dictionnaireLegumes(feuille):
     colonneNombreRecolte = 4
     colonneNombreRang = 5
     colonneEspacement = 6
+    colonneQuantitePack = 7
     colonneQuantitePlanche = 9
     colonnePacksPlanche = 8
     colonnePlateauxPlanche = 10
@@ -68,6 +71,7 @@ def dictionnaireLegumes(feuille):
                         feuille.getCellByPosition(colonneBinage, ligne).Value,
                         feuille.getCellByPosition(colonneNotes, ligne).String,
                         feuille.getCellByPosition(colonneInsectes, ligne).String,
+                        feuille.getCellByPosition(colonneQuantitePack, ligne).Value,
                     )
         ligne += 1
     return dictionnaire
