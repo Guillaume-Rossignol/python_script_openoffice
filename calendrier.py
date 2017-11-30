@@ -9,8 +9,6 @@ from planche import *
 from messagebox import *
 import feuillesplanche
 
-from com.sun.star.awt.MessageBoxButtons import BUTTONS_OK, BUTTONS_OK_CANCEL, BUTTONS_YES_NO, BUTTONS_YES_NO_CANCEL, BUTTONS_RETRY_CANCEL, BUTTONS_ABORT_IGNORE_RETRY
-from com.sun.star.awt.MessageBoxButtons import DEFAULT_BUTTON_OK, DEFAULT_BUTTON_CANCEL, DEFAULT_BUTTON_RETRY, DEFAULT_BUTTON_YES, DEFAULT_BUTTON_NO, DEFAULT_BUTTON_IGNORE
 
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX, INFOBOX, WARNINGBOX, ERRORBOX, QUERYBOX
 # renommer les valeurs pour eviter possibles ambiguites
@@ -20,6 +18,25 @@ colonneLegume = 3
 
 def GenerateFeuillesPlanche():
     doc = XSCRIPTCONTEXT.getDocument()
+
+    #Demande une confirmation
+    res = MessageBox(
+        doc.CurrentController.Frame.ContainerWindow,
+        "Générer les feuilles va détruire les précendentes feuilles générer.\n" +
+        "Cette action prend un temps certain",
+        "Confirmation génération des feuilles planches",
+        WARNINGBOX,
+        MBR_YES + MBR_CANCEL
+    )
+    if res != MBR_YES:
+        MessageBox(
+            doc.CurrentController.Frame.ContainerWindow,
+            "Rien n'a été fait",
+            "Annulation",
+            INFOBOX,
+            MBR_YES
+        )
+        return
 
     # Crée et récupere les différentes feuilles
     def getSheetByName(document, name):
@@ -36,7 +53,7 @@ def GenerateFeuillesPlanche():
 
 
     feuillesplanche.generateFeuilles(XSCRIPTCONTEXT, planches)
-    MessageBox(doc.CurrentController.Frame.ContainerWindow, 'Fait', 'Création des feuilles')
+    MessageBox(doc.CurrentController.Frame.ContainerWindow, 'Toutes les feuilles ont été créées', 'Création des feuilles')
 
 
 def calendrier():
