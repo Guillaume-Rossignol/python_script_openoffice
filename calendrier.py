@@ -119,21 +119,26 @@ def calendrier():
         remplirCalendrierRecolte(planche, calendrierRecolte)
 
     # Fonctions utilisées pour affichers les planches dans le tableau de récap
+    def addTest(planche, chaine):
+        if planche.isATest():
+            chaine += " test"
+        return chaine
     def plancheNamesPlateaux(l):
         for planche in l:
-            yield planche.getId() + '-' + planche.legume.nom + "(" + str(planche.legume.plateauxPlanche)  + ")"
+            yield addTest(planche, planche.getId() + '-' + planche.legume.nom + "(" + str(planche.legume.plateauxPlanche)  + ")")
     def namesAndPacks(l):
         for planche in l:
-            yield planche.legume.nom + " " +str(planche.legume.packsPlanche) + " packs"
+            yield addTest(planche, planche.legume.nom + " " +str(planche.legume.packsPlanche) + " packs")
     def namesAndSemi(l):
         for planche in l:
-            yield planche.legume.nom + "(" + planche.legume.quantitePlanche + ")"
+            yield addTest(planche, planche.legume.nom + "(" + planche.legume.quantitePlanche + ")")
     def plancheAndNames(l):
         for planche in l:
-            yield planche.getId() + '-' + planche.legume.nom
+            yield addTest(planche, planche.getId() + '-' + planche.legume.nom)
 
     #Remplissage des données fixes de la feuille de recap
-    feuilleRecapCalendrier.getCellRangeByName("A1:G1000").clearContents(7)
+    recapCellRange = feuilleRecapCalendrier.getCellRangeByName("A1:G1000")
+    recapCellRange.clearContents(7)
 
 
     #Ecriture des colonnes
@@ -161,6 +166,13 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheNamesPlateaux)
             checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
+
+    #mise en page
+    for row in recapCellRange.getRows():
+        row.setPropertyValue('OptimalHeight', True)
+    for column in recapCellRange.getColumns():
+        column.setPropertyValue('OptimalWidth', True)
+
 
 def next_weekday(d, weekday):
     days_ahead = weekday - d.weekday()
