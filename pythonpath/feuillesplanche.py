@@ -74,3 +74,4 @@ def generateFeuilles(context, planches):
             remplir("F1", "TEST")
 
         oDataDoc.store()
+        oDataDoc.close(False)
