@@ -13,7 +13,10 @@ class Legume:
             espacement = 30,
             quantitePlanche = 0,
             packsPlanche = 0,
-            plateauxPlanche = 0
+            plateauxPlanche = 0,
+            binage = 0,
+            notes = "",
+            insectes = "",
             ):
         self.nom = nom
         self.multicellules = multicellules
@@ -25,6 +28,9 @@ class Legume:
         self.quantitePlanche = quantitePlanche
         self.packsPlanche = packsPlanche
         self.plateauxPlanche = plateauxPlanche
+        self.binage = binage
+        self.notes = notes
+        self.insectes = insectes
 
 def dictionnaireLegumes(feuille):
     #configuration de la feuille
@@ -38,6 +44,9 @@ def dictionnaireLegumes(feuille):
     colonneQuantitePlanche = 9
     colonnePacksPlanche = 8
     colonnePlateauxPlanche = 10
+    colonneBinage = 13
+    colonneNotes = 14
+    colonneInsectes = 15
 
     #Parcours de la feuille et génération du bouzin
     dictionnaire = {}
@@ -51,11 +60,14 @@ def dictionnaireLegumes(feuille):
                         feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,
                         feuille.getCellByPosition(colonneRecolte, ligne).String,
                         int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),
-                        feuille.getCellByPosition(colonneNombreRang, ligne).String,
-                        feuille.getCellByPosition(colonneEspacement, ligne).String,
+                        feuille.getCellByPosition(colonneNombreRang, ligne).Value,
+                        feuille.getCellByPosition(colonneEspacement, ligne).Value,
                         feuille.getCellByPosition(colonneQuantitePlanche, ligne).String,
                         feuille.getCellByPosition(colonnePacksPlanche, ligne).String,
-                        feuille.getCellByPosition(colonnePlateauxPlanche, ligne).String
+                        feuille.getCellByPosition(colonnePlateauxPlanche, ligne).String,
+                        feuille.getCellByPosition(colonneBinage, ligne).Value,
+                        feuille.getCellByPosition(colonneNotes, ligne).String,
+                        feuille.getCellByPosition(colonneInsectes, ligne).String,
                     )
         ligne += 1
     return dictionnaire

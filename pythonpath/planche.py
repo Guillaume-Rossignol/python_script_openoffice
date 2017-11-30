@@ -10,7 +10,13 @@ class Planche:
                  semi,
                  preparation,
                  transplant,
-                 premiereRecolte
+                 premiereRecolte,
+                 rangs,
+                 espacement,
+                 geotextile,
+                 irrigation,
+                 fournisseur,
+                 notes
                  ):
         self.legume = legume
         self.bloc = bloc
@@ -21,6 +27,12 @@ class Planche:
         self.preparation = float(preparation)
         self.transplant = float(transplant)
         self.premiereRecolte = float(premiereRecolte)
+        self.rangs = rangs
+        self.espacement = espacement
+        self.geotextile = geotextile
+        self.irrigation = irrigation
+        self.fournisseur = fournisseur
+        self.notes = notes
     def getId(self):
         return str(self.bloc)+'-'+str(self.planche)+'-'+str(self.iteration)
 
@@ -43,6 +55,12 @@ def listePlanche(feuille, dictionnaireLegume):
     colonnePreparation = 6
     colonneTransplant = 7
     colonnePremiereRecolte = 8
+    colonneFournisseur = 9
+    colonneRangs = 10
+    colonneEspacement = 11
+    colonneGeotextile = 12
+    colonneIrrigation = 13
+    colonneNotes = 14
 
     #Parcours de la feuille et génération du bouzin
     planches = []
@@ -63,7 +81,13 @@ def listePlanche(feuille, dictionnaireLegume):
             feuille.getCellByPosition(colonneSemi, ligne).Value,
             feuille.getCellByPosition(colonnePreparation, ligne).Value,
             feuille.getCellByPosition(colonneTransplant, ligne).Value,
-            feuille.getCellByPosition(colonnePremiereRecolte, ligne).Value
+            feuille.getCellByPosition(colonnePremiereRecolte, ligne).Value,
+            feuille.getCellByPosition(colonneRangs, ligne).Value,
+            feuille.getCellByPosition(colonneEspacement, ligne).Value,
+            feuille.getCellByPosition(colonneGeotextile, ligne).String,
+            feuille.getCellByPosition(colonneIrrigation, ligne).String,
+            feuille.getCellByPosition(colonneFournisseur, ligne).String,
+            feuille.getCellByPosition(colonneNotes, ligne).String,
                                 ))
 
         ligne += 1
