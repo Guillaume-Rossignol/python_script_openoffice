@@ -42,7 +42,8 @@ class Planche:
             #Pour l'instant la fréquence de récolte est forcement 7 jours
             listeRecolte.append(self.premiereRecolte + 7*indiceRecolte)
         return listeRecolte
-
+    def isATest(self):
+        return self.espacement != self.legume.espacement or self.rangs != self.legume.nombreRang
 
 def listePlanche(feuille, dictionnaireLegume):
     #configuration de la feuille
