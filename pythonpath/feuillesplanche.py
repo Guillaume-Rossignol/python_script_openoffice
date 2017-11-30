@@ -70,7 +70,7 @@ def generateFeuilles(context, planches):
 
         remplir("D22", "Insectes : "+planche.legume.insectes+"\nNotes planche : " +planche.notes+"\nNotes légume : "+planche.legume.notes)
 
-        if planche.rangs != planche.legume.nombreRang or planche.espacement != planche.legume.espacement:
+        if planche.isATest():
             remplir("F1", "TEST")
 
         oDataDoc.store()
