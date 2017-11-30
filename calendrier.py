@@ -2,10 +2,43 @@
 #importe uno
 import uno
 from datetime import *
+import os
+import shutil
 from legume import *
 from planche import *
+from messagebox import *
+import feuillesplanche
+
+from com.sun.star.awt.MessageBoxButtons import BUTTONS_OK, BUTTONS_OK_CANCEL, BUTTONS_YES_NO, BUTTONS_YES_NO_CANCEL, BUTTONS_RETRY_CANCEL, BUTTONS_ABORT_IGNORE_RETRY
+from com.sun.star.awt.MessageBoxButtons import DEFAULT_BUTTON_OK, DEFAULT_BUTTON_CANCEL, DEFAULT_BUTTON_RETRY, DEFAULT_BUTTON_YES, DEFAULT_BUTTON_NO, DEFAULT_BUTTON_IGNORE
+
+from com.sun.star.awt.MessageBoxType import MESSAGEBOX, INFOBOX, WARNINGBOX, ERRORBOX, QUERYBOX
+# renommer les valeurs pour eviter possibles ambiguites
+from com.sun.star.awt.MessageBoxResults import YES as MBR_YES, NO as MBR_NO, CANCEL as MBR_CANCEL
 
 colonneLegume = 3
+
+def GenerateFeuillesPlanche():
+    doc = XSCRIPTCONTEXT.getDocument()
+
+    # Crée et récupere les différentes feuilles
+    def getSheetByName(document, name):
+        if document.Sheets.hasByName(name):
+            return document.Sheets.getByName(name)
+        document.Sheets.insertNewByName(name, 0)
+        return document.Sheets.getByName(name)
+
+    feuilleDate = getSheetByName(doc, "Plan de jardin")
+    feuilleLegume = getSheetByName(doc, 'Legumes')
+
+    legumes = dictionnaireLegumes(feuilleLegume)
+    planches = listePlanche(feuilleDate, legumes)
+
+
+    feuillesplanche.generateFeuilles(XSCRIPTCONTEXT, planches)
+    MessageBox(doc.CurrentController.Frame.ContainerWindow, 'Fait', 'Création des feuilles')
+
+
 def calendrier():
     # récupère le document actif
     document = XSCRIPTCONTEXT.getDocument()
