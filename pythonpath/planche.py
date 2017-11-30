@@ -49,12 +49,24 @@ class Planche:
     def getQuantitePlanche(self):
         if not self.isATest():
             return self.legume.quantitePlanche
-        return 3000/self.espacement*self.rangs
+        if self.espacement:
+            return 3000/self.espacement*self.rangs
+        return -1
 
     def getPacks(self):
         if not self.isATest():
             return self.legume.packsPlanche
-        return self.getQuantitePlanche()/self.legume.quantitePack
+        if self.legume.quantitePack :
+            return self.getQuantitePlanche()/self.legume.quantitePack
+        return -1
+
+    def getPlateau(self):
+        if not self.isATest():
+            return self.legume.plateauxPlanche
+        if self.legume.multicellules>0:
+            return self.getQuantitePlanche() / self.legume.multicellules
+        return -1
+
 
 def listePlanche(feuille, dictionnaireLegume):
     #configuration de la feuille

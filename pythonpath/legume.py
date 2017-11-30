@@ -59,7 +59,7 @@ def dictionnaireLegumes(feuille):
         dictionnaire[standardisationNom(feuille.getCellByPosition(colonneNom, ligne).String)] = \
                      Legume(
                         feuille.getCellByPosition(colonneNom, ligne).String,
-                        feuille.getCellByPosition(colonneMultiCellule, ligne).String,
+                        feuille.getCellByPosition(colonneMultiCellule, ligne).Value,
                         feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,
                         feuille.getCellByPosition(colonneRecolte, ligne).String,
                         int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),

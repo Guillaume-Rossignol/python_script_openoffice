@@ -125,13 +125,13 @@ def calendrier():
         return chaine
     def plancheNamesPlateaux(l):
         for planche in l:
-            yield addTest(planche, planche.getId() + '-' + planche.legume.nom + "(" + str(planche.legume.plateauxPlanche)  + ")")
+            yield addTest(planche, planche.getId() + '-' + planche.legume.nom + "(" + str(planche.getPlateau())  + ")")
     def namesAndPacks(l):
         for planche in l:
-            yield addTest(planche, planche.legume.nom + " " +str(planche.legume.packsPlanche) + " packs")
+            yield addTest(planche, planche.legume.nom + " " +str(planche.getPacks()) + " packs")
     def namesAndSemi(l):
         for planche in l:
-            yield addTest(planche, planche.legume.nom + "(" + planche.legume.quantitePlanche + ")")
+            yield addTest(planche, planche.legume.nom + "(" + planche.getQuantitePlanche() + ")")
     def plancheAndNames(l):
         for planche in l:
             yield addTest(planche, planche.getId() + '-' + planche.legume.nom)
