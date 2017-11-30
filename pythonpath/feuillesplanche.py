@@ -2,7 +2,6 @@ import uno
 import os
 import shutil
 from com.sun.star.beans import PropertyValue
-from messagebox import *
 
 def generateFeuilles(context, planches):
     doc = context.getDocument()
@@ -21,11 +20,8 @@ def generateFeuilles(context, planches):
     fichierModele = os.path.join(currentDirectory, 'modelefeuille.ods')
 
 
-    i=0
     #Parcours de toutes les planches
     for planche in planches:
-        if i>3:
-            return
         fichierDestination = os.path.join(destinationDirectory, planche.getId()+" "+planche.legume.nom+'.ods')
         urlDestination = uno.systemPathToFileUrl(fichierDestination)
         #Copie bête et méchante du modéle
@@ -77,7 +73,4 @@ def generateFeuilles(context, planches):
         if planche.rangs != planche.legume.nombreRang or planche.espacement != planche.legume.espacement:
             remplir("F1", "TEST")
 
-        i+=1
         oDataDoc.store()
-
-
