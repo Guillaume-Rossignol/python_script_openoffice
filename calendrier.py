@@ -9,10 +9,10 @@ from planche import *
 from messagebox import *
 import feuillesplanche
 
-
+from com.sun.star.awt.MessageBoxButtons import BUTTONS_OK, BUTTONS_OK_CANCEL, BUTTONS_YES_NO, BUTTONS_YES_NO_CANCEL, BUTTONS_RETRY_CANCEL, BUTTONS_ABORT_IGNORE_RETRY
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX, INFOBOX, WARNINGBOX, ERRORBOX, QUERYBOX
 # renommer les valeurs pour eviter possibles ambiguites
-from com.sun.star.awt.MessageBoxResults import YES as MBR_YES, NO as MBR_NO, CANCEL as MBR_CANCEL
+from com.sun.star.awt.MessageBoxResults import OK as MBR_OK
 
 colonneLegume = 3
 
@@ -26,9 +26,9 @@ def GenerateFeuillesPlanche():
         "Cette action prend un temps certain",
         "Confirmation génération des feuilles planches",
         WARNINGBOX,
-        MBR_YES + MBR_CANCEL
+        BUTTONS_OK_CANCEL
     )
-    if res != MBR_YES:
+    if res != MBR_OK:
         MessageBox(
             doc.CurrentController.Frame.ContainerWindow,
             "Rien n'a été fait",
