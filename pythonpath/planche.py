@@ -45,6 +45,25 @@ class Planche:
             listeRecolte.append(self.premiereRecolte + 7*indiceRecolte)
         return listeRecolte
 
+    def getListeBinage(self):
+        listeBinage = []
+
+        # Le geotextile dispense de binage
+        if self.hasGeotextile():
+            return []
+
+        # Meme s'il n'y a pas de frequence de binage, on bine toujours apres une semaine de transplant
+        if not self.legume.binage:
+            return [self.transplant + 7]
+
+        # Le premier binage a toujours lieu 7 jours apres le transplant.
+        currentBinage = self.transplant + 7
+        while currentBinage < self.premiereRecolte:
+            listeBinage.append(currentBinage)
+            currentBinage += 7*self.legume.binage
+
+        return listeBinage
+
     def isATest(self):
         return self.espacement != self.legume.espacement or self.rangs != self.legume.nombreRang
 
@@ -68,6 +87,9 @@ class Planche:
         if self.legume.multicellules>0:
             return self.getQuantitePlanche() / self.legume.multicellules
         return -1
+
+    def hasGeotextile(self):
+        return self.geotextile.strip().lower() == 'oui'
 
 
 def listePlanche(feuille, dictionnaireLegume):
