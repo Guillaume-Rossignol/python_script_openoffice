@@ -64,11 +64,6 @@ def generateFeuilles(context, planches):
         remplir("E6", planche.legume.multicellules)
         remplir("E7", planche.legume.joursEnCellules)
         remplir("E9", planche.fournisseur)
-        if planche.legume.binage > 0:
-            if planche.legume.binage ==1:
-                remplir("E11", str(planche.legume.binage) + " semaine")
-            else:
-                remplir("E11", str(planche.legume.binage) + " semaines")
 
         remplir("D22", "Insectes : "+planche.legume.insectes+"\nNotes planche : " +planche.notes+"\nNotes légume : "+planche.legume.notes)
 
