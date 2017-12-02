@@ -78,6 +78,7 @@ def calendrier():
     calendrierPrepaPlanche = {}
     calendrierTransplant = {}
     calendrierRecolte = {}
+    calendrierBinage = {}
     variables = {}
 
     legumes = dictionnaireLegumes(feuilleLegume)
@@ -111,11 +112,21 @@ def calendrier():
             else:
                 calendrier[date] = [planche]
 
+    def remplirCalendrierBinage(planche, calendrier):
+        dates = planche.getListeBinage()
+        for date in dates:
+            if date in calendrier:
+                calendrier[date].append(planche)
+            else:
+                calendrier[date] = [planche]
+
+
     for planche in planches:
         remplirCalendrier(planche, calendrierSemi, "semi")
         remplirCalendrier(planche, calendrierCommande, "commande")
         remplirCalendrier(planche, calendrierPrepaPlanche, "preparation")
         remplirCalendrier(planche, calendrierTransplant, "transplant")
+        remplirCalendrierBinage(planche, calendrierBinage)
         remplirCalendrierRecolte(planche, calendrierRecolte)
 
     # Fonctions utilisées pour affichers les planches dans le tableau de récap
@@ -146,7 +157,8 @@ def calendrier():
     feuilleRecapCalendrier.getCellByPosition(2, 0).String ="Semis"
     feuilleRecapCalendrier.getCellByPosition(3, 0).String ="PrepaPlanche"
     feuilleRecapCalendrier.getCellByPosition(4, 0).String ="Transplant"
-    feuilleRecapCalendrier.getCellByPosition(5, 0).String ="Recolte"
+    feuilleRecapCalendrier.getCellByPosition(5, 0).String ="Binage"
+    feuilleRecapCalendrier.getCellByPosition(6, 0).String ="Recolte"
 
     #Pour toutes les semaines de l'année
     for week in range(52):
@@ -157,6 +169,7 @@ def calendrier():
             3:0,
             4:0,
             5:0,
+            6:0,
         }
         feuilleRecapCalendrier.getCellByPosition(0, lineShift).String = "Semaine "+str(week+1)
         for day in range(1, 8):
@@ -173,8 +186,9 @@ def calendrier():
             checkCalendrierAndDisplay(calendrierSemi, 2, namesAndPacks)
             checkCalendrierAndDisplay(calendrierPrepaPlanche, 3, plancheAndNames)
             checkCalendrierAndDisplay(calendrierTransplant, 4, plancheNamesPlateaux)
-            checkCalendrierAndDisplay(calendrierRecolte, 5, plancheAndNames)
-        for colonne in range(1,6):
+            checkCalendrierAndDisplay(calendrierBinage, 5, plancheAndNames)
+            checkCalendrierAndDisplay(calendrierRecolte, 6, plancheAndNames)
+        for colonne in volumeActivite:
             feuilleRecapCalendrier.getCellByPosition(colonne, lineShift + 8).setFormula(volumeActivite[colonne])
         feuilleRecapCalendrier.getCellByPosition(0, lineShift + 8).setFormula(sum(volumeActivite.values()))
     #mise en page
