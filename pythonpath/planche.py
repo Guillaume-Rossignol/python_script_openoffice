@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from legume import *
 
 class Planche:

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import uno
 import os
 import shutil
