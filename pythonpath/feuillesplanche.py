@@ -52,10 +52,15 @@ def generateFeuilles(context, planches):
         remplir("B10", planche.preparation)
         remplir("B11", planche.transplant)
 
-        ligneRecolte=12
+        ligneDate=12
+        for date in planche.getListeBinage():
+            remplir("A"+str(ligneDate), 'Binage')
+            remplir("B"+str(ligneDate), date)
+            ligneDate += 1
         for date in planche.getListeRecolte():
-            remplir("B"+str(ligneRecolte), date)
-            ligneRecolte += 1
+            remplir("A"+str(ligneDate), 'Recolte')
+            remplir("B"+str(ligneDate), date)
+            ligneDate += 1
 
         remplir("E2", planche.rangs)
         remplir("E3", planche.espacement)
