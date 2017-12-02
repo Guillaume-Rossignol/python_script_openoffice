@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import re
 from re import sub
 
 
@@ -20,6 +20,7 @@ class Legume:
             notes = "",
             insectes = "",
             quantitePack = 1,
+            insectesDates = "",
             ):
         self.nom = nom
         self.multicellules = multicellules
@@ -35,6 +36,16 @@ class Legume:
         self.notes = notes
         self.insectes = insectes
         self.quantitePack = quantitePack
+        def generateInsecteDates(chaine):
+            #Grosso modo : "+25|01/08 Chaine de caractere"
+            decomposition = re.match("(\+\d+)|(\d\d/\d\d) (.*)", chaine)
+            if not decomposition:
+                return None
+            if decomposition.group(1):
+                return [decomposition.group(1), decomposition.group(3)]
+            else:
+                return [decomposition.group(2), decomposition.group(3)]
+        self.insectesDates = [generateInsecteDates(s.strip()) for s in insectesDates.split(';')]
 
 def dictionnaireLegumes(feuille):
     #configuration de la feuille
@@ -52,6 +63,7 @@ def dictionnaireLegumes(feuille):
     colonneBinage = 13
     colonneNotes = 14
     colonneInsectes = 15
+    colonneInsectesDates = 16
 
     #Parcours de la feuille et génération du bouzin
     dictionnaire = {}
@@ -74,6 +86,7 @@ def dictionnaireLegumes(feuille):
                         feuille.getCellByPosition(colonneNotes, ligne).String,
                         feuille.getCellByPosition(colonneInsectes, ligne).String,
                         feuille.getCellByPosition(colonneQuantitePack, ligne).Value,
+                        feuille.getCellByPosition(colonneInsectesDates, ligne).String,
                     )
         ligne += 1
     return dictionnaire
