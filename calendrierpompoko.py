@@ -3,6 +3,7 @@ import uno
 from datetime import *
 import os
 import shutil
+from legumePompoko import *
 from planche import *
 from messagebox import *
 import feuillesplanche
@@ -12,7 +13,48 @@ from com.sun.star.awt.MessageBoxType import MESSAGEBOX, INFOBOX, WARNINGBOX, ERR
 # renommer les valeurs pour eviter possibles ambiguites
 from com.sun.star.awt.MessageBoxResults import OK as MBR_OK
 
-colonneLegume = 3
+
+
+def TraiteNouvellesCellules(actionEvent: com.sun.star.awt.ActionEvent):
+    doc = XSCRIPTCONTEXT.getDocument()
+
+    res = MessageBox(
+        doc.CurrentController.Frame.ContainerWindow,
+        str(type(actionEvent)) +
+        "Cette action prend un temps certain",
+        "Confirmation génération des feuilles planches",
+        WARNINGBOX,
+        BUTTONS_OK_CANCEL
+    )
+
+    #Recuperer les cellules avec du texte
+
+
+
+    # Coomparer avec les legumes existants et préciser qu'il faudra completer le tableau des legumes
+
+
+
+
+
+    #Completer le calendrier
+
+
+
+
+
+
+
+    if res != MBR_OK:
+        MessageBox(
+            doc.CurrentController.Frame.ContainerWindow,
+            "Rien n'a été fait",
+            "Annulation",
+            INFOBOX,
+            MBR_YES
+        )
+        return
+
 
 def GenerateFeuillesPlanche():
     doc = XSCRIPTCONTEXT.getDocument()
