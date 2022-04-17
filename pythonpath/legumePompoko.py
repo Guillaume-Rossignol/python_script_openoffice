@@ -1,87 +1,136 @@
 # -*- coding: utf-8 -*-
 import re
+import math
 from re import sub
 
 
 class Legume:
+    
     def __init__(
             self,
             nom,
-            multicellules = 0,
-            joursEnCellules = 0,
-            recolte = 0,
-            nombreRecolte =1,
-            nombreRang = 1,
-            espacement = 30,
-            quantitePlanche = 0,
-            packsPlanche = 0,
-            plateauxPlanche = 0,
-            binage = 0,
-            notes = "",
-            quantitePack = 1,
+            typeEmplacement = "PC", #PC pour ce qui est planté en sol, SA pour la serre
+            trimestre = 0, #0: toute l'année, sinon, [1,4]
+            elevage = 0, #temps en semis
+            croissance = 0, #temps en terre
+            recolte =1, # durée pendant laquelle on peut récolter apres la croissance (>0)
+            fournisseur = "",
+            nbCaisse = 30, #nombre de caisse par planche
+            quantiteGraine = 0, #par plance
+            masse = 0, #masse (en kg) recolté par planche
+            formatMotte = 0, #0 : non concerné, 1 petite motte, 2 grosse motte
+            grGramme = "", #aucune idée de ce que je doit faire de cette information
+            densite = "", #densité ?!?
             ):
-        self.nom = nom
-        self.multicellules = multicellules
-        self.joursEnCellules = joursEnCellules
         self.recolte = recolte
-        self.nombreRecolte = nombreRecolte
-        self.nombreRang = nombreRang
-        self.espacement = espacement
-        self.quantitePlanche = quantitePlanche
-        self.packsPlanche = packsPlanche
-        self.plateauxPlanche = plateauxPlanche
-        self.binage = binage
-        self.notes = notes
-        self.quantitePack = quantitePack
-        def generateInsecteDates(chaine):
-            #Grosso modo : "+25|01/08 Chaine de caractere"
-            decomposition = re.match("(\+\d+)|(\d\d/\d\d) (.*)", chaine)
-            if not decomposition:
-                return None
-            if decomposition.group(1):
-                return [decomposition.group(1), decomposition.group(3)]
-            else:
-                return [decomposition.group(2), decomposition.group(3)]
-        self.insectesDates = [generateInsecteDates(s.strip()) for s in insectesDates.split(';')]
+        self.croissance = croissance
+        self.fournisseur = fournisseur
+        self.nbCaisse = nbCaisse
+        self.masse = masse
+        self.quantiteGraine = quantiteGraine
+        self.formatMotte = formatMotte
+        self.grGramme = grGramme
+        self.densite = densite
+        self.trimestre = trimestre
+        self.elevage = elevage
+        self.nom = nom
+        self.typeEmplacement = typeEmplacement
+
+class DicoIntelligent:
+    def __init__(self, dico):
+        self.dico = dico
+
+    def getInfos(self, nom, typeDeSol, semaine):
+        trimName = standardisationNom(nom, typeDeSol, self.convertSemaineToTrimestre(semaine))
+        genericName = standardisationNom(nom, typeDeSol, 0)
+
+        if trimName in self.dico:
+            return self.dico[trimName]
+        if genericName in self.dico:
+            return self.dico[genericName]
+
+        return None
+
+    def convertSemaineToTrimestre(self, semaine):
+        return math.ceil(semaine/13)
+
+
 
 def dictionnaireLegumes(feuille):
     #configuration de la feuille
     colonneNom = 0
-    colonneMultiCellule = 1
-    colonneJoursEnCellules = 2
-    colonneRecolte = 3
-    colonneNombreRecolte = 4
-    colonneNombreRang = 5
-    colonneEspacement = 6
-    colonneQuantitePack = 7
-    colonneQuantitePlanche = 9
-    colonnePacksPlanche = 8
-    colonnePlateauxPlanche = 10
-    colonneBinage = 13
-    colonneNotes = 14
+    colonnetypeSol = 1
+    colonnetrimestre = 2
+    colonneelevage = 3
+    colonnecroissance = 4
+    colonnerecolte = 5
+    colonnefournisseur = 6
+    colonnenbCaisse = 7
+    colonnequantitegraine = 8
+    colonnemasse = 9
+    colonnetypeMotte = 10
+    colonnegrGramme = 11
+    colonnedensite = 12
 
     #Parcours de la feuille et génération du bouzin
     dictionnaire = {}
 
     ligne = 1
     while feuille.getCellByPosition(colonneNom, ligne).String != "":
-        dictionnaire[standardisationNom(feuille.getCellByPosition(colonneNom, ligne).String)] = \
-                     Legume(
-                        feuille.getCellByPosition(colonneNom, ligne).String,
-                        feuille.getCellByPosition(colonneMultiCellule, ligne).Value,
-                        feuille.getCellByPosition(colonneJoursEnCellules, ligne).String,
-                        feuille.getCellByPosition(colonneRecolte, ligne).String,
-                        int(feuille.getCellByPosition(colonneNombreRecolte, ligne).Value),
-                        feuille.getCellByPosition(colonneNombreRang, ligne).Value,
-                        feuille.getCellByPosition(colonneEspacement, ligne).Value,
-                        feuille.getCellByPosition(colonneQuantitePlanche, ligne).String,
-                        feuille.getCellByPosition(colonnePacksPlanche, ligne).String,
-                        feuille.getCellByPosition(colonnePlateauxPlanche, ligne).String,
-                        feuille.getCellByPosition(colonneBinage, ligne).Value,
-                        feuille.getCellByPosition(colonneNotes, ligne).String,
-                        feuille.getCellByPosition(colonneQuantitePack, ligne).Value,
-                    )
+        dictionnaire[standardisationNom(
+            feuille.getCellByPosition(colonneNom, ligne).String,
+            feuille.getCellByPosition(colonnetypeSol, ligne).String,
+            feuille.getCellByPosition(colonnetrimestre, ligne).String
+        )] = Legume(
+            feuille.getCellByPosition(colonneNom, ligne).String,
+            feuille.getCellByPosition(colonnetypeSol, ligne).String,
+            int(feuille.getCellByPosition(colonnetrimestre, ligne).String),
+            int(feuille.getCellByPosition(colonneelevage, ligne).String),
+            int(feuille.getCellByPosition(colonnecroissance, ligne).String),
+            int(feuille.getCellByPosition(colonnerecolte, ligne).String),
+            feuille.getCellByPosition(colonnefournisseur, ligne).String,
+            int(feuille.getCellByPosition(colonnenbCaisse, ligne).String),
+            feuille.getCellByPosition(colonnequantitegraine, ligne).String,
+            feuille.getCellByPosition(colonnemasse, ligne).String,
+            feuille.getCellByPosition(colonnetypeMotte, ligne).String,
+            feuille.getCellByPosition(colonnegrGramme, ligne).String,
+            feuille.getCellByPosition(colonnedensite, ligne).String
+        )
         ligne += 1
-    return dictionnaire
-def standardisationNom(nom):
-    return sub('[^a-z]', '', nom.split(':')[0].lower())
+
+    return DicoIntelligent(dictionnaire)
+
+
+def standardisationNom(nom, typeDeSol, trimestre):
+    return sub('[^a-z]', '', (nom.split(':')[0] + typeDeSol).lower()) + str(trimestre)
+
+
+
+
+
+
+
+
+
+
+
+
+class DictionnaireLegume:
+    def __init__(self, feuille):
+        self.feuille = feuille
+        self.legumesConfigures = {}
+        self.nouveauxLegumes = []
+
+
+    def get_legume(self, legumeName):
+        if self.legumesConfigures.has_key(legumeName):
+
+            return self.legumesConfigures[legumeName]
+
+        self.nouveauxLegumes.append(legumeName)
+
+        return False
+
+    def save(self):
+        for legume in self.nouveauxLegumes:
+            print(legume)
