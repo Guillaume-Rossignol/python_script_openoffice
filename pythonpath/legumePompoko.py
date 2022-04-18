@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import re
 import math
+import datetime
 from re import sub
 
 
 class Legume:
-    
     def __init__(
             self,
             nom,
@@ -35,6 +34,12 @@ class Legume:
         self.elevage = elevage
         self.nom = nom
         self.typeEmplacement = typeEmplacement
+
+    def isConfigured(self):
+        return self.recolte > 0 and self.croissance > 0
+
+    def aColoriser(self):
+        return self.recolte + self.croissance
 
 class DicoIntelligent:
     def __init__(self, dico):
@@ -100,37 +105,43 @@ def dictionnaireLegumes(feuille):
 
     return DicoIntelligent(dictionnaire)
 
+def convertColonneToSemaine(colonne):
+    return (colonne-20) % 52
 
 def standardisationNom(nom, typeDeSol, trimestre):
     return sub('[^a-z]', '', (nom.split(':')[0] + typeDeSol).lower()) + str(trimestre)
 
+class Sheet:
+    def __init__(self, oosheet, start2021, errorColor):
+        self.errorColor = errorColor
+        self.start2021 = start2021
+        self.oosheet = oosheet
+        if oosheet.Name == "PC":
+            self.rangeLine = [
+                range(3, 13), range(15, 30), range(32, 47), range(50, 64),
+                range(66, 80), range(83, 94), range(95, 111), range(114, 127),
+                range(131, 151), range(153, 165), range(168, 178), range(181, 191),
+                range(194, 199), range(202, 220)
+            ]
 
 
+    def getColonneYear(self):
+        currentYear = datetime.datetime.now().year
+        deltaYear = currentYear - 2021
+        startColonne = self.start2021 + deltaYear * 52
+        endColonne = startColonne + 52 * 2
 
+        return range(startColonne, endColonne)
 
+    def getValideCell(self):
+        liste = []
+        for range in self.rangeLine:
+            for line in range:
+                for colonne in self.getColonneYear():
+                    cell = self.oosheet.getCellByPosition(colonne, line)
+                    cellColor = cell.getPropertyValue("CellBackColor")
+                    if cell.String != '' and (cellColor == -1 or cellColor == self.errorColor):
+                        liste.append(cell)
 
+        return liste
 
-
-
-
-
-
-class DictionnaireLegume:
-    def __init__(self, feuille):
-        self.feuille = feuille
-        self.legumesConfigures = {}
-        self.nouveauxLegumes = []
-
-
-    def get_legume(self, legumeName):
-        if self.legumesConfigures.has_key(legumeName):
-
-            return self.legumesConfigures[legumeName]
-
-        self.nouveauxLegumes.append(legumeName)
-
-        return False
-
-    def save(self):
-        for legume in self.nouveauxLegumes:
-            print(legume)
