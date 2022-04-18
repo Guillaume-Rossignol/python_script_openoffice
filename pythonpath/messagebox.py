@@ -10,8 +10,8 @@ from com.sun.star.awt.MessageBoxType import MESSAGEBOX, INFOBOX, WARNINGBOX, ERR
 from com.sun.star.awt.MessageBoxResults import YES as MBR_YES, NO as MBR_NO, CANCEL as MBR_CANCEL
 
 # Message box utilisant le Toolkit de l'API
-def MessageBox(ParentWin, MsgText, MsgTitle, MsgType=MESSAGEBOX, MsgButtons=BUTTONS_OK):
-
+def MessageBox(Document, MsgText, MsgTitle, MsgType=MESSAGEBOX, MsgButtons=BUTTONS_OK):
+  ParentWin = Document.CurrentController.Frame.ContainerWindow
   ctx = uno.getComponentContext()
   sm = ctx.ServiceManager
   sv = sm.createInstanceWithContext("com.sun.star.awt.Toolkit", ctx)
@@ -21,13 +21,12 @@ def MessageBox(ParentWin, MsgText, MsgTitle, MsgType=MESSAGEBOX, MsgButtons=BUTT
 
 def TestMessageBox():
   doc = XSCRIPTCONTEXT.getDocument()
-  parentwin = doc.CurrentController.Frame.ContainerWindow
 
   res = MBR_YES
   while res != MBR_NO:
     s = "Voulez-vous continuer ?"
     t = "Un message de Python"
-    res = MessageBox(parentwin, s, t, QUERYBOX, BUTTONS_YES_NO_CANCEL + DEFAULT_BUTTON_NO)
+    res = MessageBox(doc, s, t, QUERYBOX, BUTTONS_YES_NO_CANCEL + DEFAULT_BUTTON_NO)
 
     s = "Reponse : " +str(res)
-    MessageBox(parentwin, s, t, INFOBOX)
+    MessageBox(doc, s, t, INFOBOX)
