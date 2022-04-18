@@ -4,6 +4,10 @@ import datetime
 from re import sub
 from messagebox import MessageBox
 
+def convint(chaine):
+    if chaine == "":
+        return 0
+    return int(chaine)
 
 def convertSemaineToTrimestre(semaine):
     return math.ceil(semaine / 13)
@@ -92,12 +96,12 @@ def dictionnaireLegumes(feuille):
         )] = Legume(
             feuille.getCellByPosition(colonneNom, ligne).String,
             feuille.getCellByPosition(colonnetypeSol, ligne).String,
-            int(feuille.getCellByPosition(colonnetrimestre, ligne).String),
-            int(feuille.getCellByPosition(colonneelevage, ligne).String),
-            int(feuille.getCellByPosition(colonnecroissance, ligne).String),
-            int(feuille.getCellByPosition(colonnerecolte, ligne).String),
+            convint(feuille.getCellByPosition(colonnetrimestre, ligne).String),
+            convint(feuille.getCellByPosition(colonneelevage, ligne).String),
+            convint(feuille.getCellByPosition(colonnecroissance, ligne).String),
+            convint(feuille.getCellByPosition(colonnerecolte, ligne).String),
             feuille.getCellByPosition(colonnefournisseur, ligne).String,
-            int(feuille.getCellByPosition(colonnenbCaisse, ligne).String),
+            convint(feuille.getCellByPosition(colonnenbCaisse, ligne).String),
             feuille.getCellByPosition(colonnequantitegraine, ligne).String,
             feuille.getCellByPosition(colonnemasse, ligne).String,
             feuille.getCellByPosition(colonnetypeMotte, ligne).String,
@@ -169,8 +173,6 @@ def getSheetByName(document, name):
     return document.Sheets.getByName(name)
 
 def addMissingLegumes(sheet, legumes:set):
-    if len(legumes) < 1:
-        return
     emptyLine = 1
     while sheet.getCellByPosition(0, emptyLine).String != "":
         emptyLine += 1
@@ -180,7 +182,6 @@ def addMissingLegumes(sheet, legumes:set):
         sheet.getCellByPosition(1, emptyLine).setFormula(typeDeSol)
         sheet.getCellByPosition(2, emptyLine).setFormula(trimestre)
         emptyLine +=1
-
 
 def processComplet(document):
     bdd = getSheetByName(document, "base de données")
@@ -201,6 +202,8 @@ def processComplet(document):
         MessageBox(document, 'Completer la feuille «base de données». Un filtre sur la croissance et la récolte = 0 peut aider', 'Erreur bdd')
         document.getCurrentController().setActiveSheet(bdd)
         return None
+
+    MessageBox(document, 'dico generé', 'Fini')
 
 
     def coloriser(sheet: Sheet, dicoLegumes):
@@ -239,5 +242,17 @@ def processComplet(document):
     bilanSA = coloriser(saSheet, dicoLegume)
 
     missingLegumes = bilanSA["légume inexistant"].union(bilanPC["légume inexistant"])
-    addMissingLegumes(bdd, missingLegumes)
+    if len(missingLegumes) > 0:
+        addMissingLegumes(bdd, missingLegumes)
+        MessageBox(document, 'Completer les légumes rajoutés à la feuille', 'Ajout légumes')
+        document.getCurrentController().setActiveSheet(bdd)
+
+    if (len(bilanSA["placePrise"]) + len(bilanPC["placePrise"])) > 0:
+        MessageBox(document, 'Certains légumes n\'ont pas assez de places et ont été mis en rouge', 'Soucis planning')
+
+    MessageBox(document, 'Fini', 'Fini')
+
+    return None
+
+
 
