@@ -2,8 +2,11 @@
 import math
 import datetime
 from re import sub
+from messagebox import MessageBox
 
 
+def convertSemaineToTrimestre(semaine):
+    return math.ceil(semaine / 13)
 class Legume:
     def __init__(
             self,
@@ -57,7 +60,7 @@ class DicoIntelligent:
         return None
 
     def convertSemaineToTrimestre(self, semaine):
-        return math.ceil(semaine/13)
+        return convertSemaineToTrimestre(semaine)
 
 
 
@@ -103,18 +106,20 @@ def dictionnaireLegumes(feuille):
         )
         ligne += 1
 
-    return DicoIntelligent(dictionnaire)
+    #Controle des données du dico
+    erreur = [legume.nom for legume in dictionnaire.values() if (legume.recolte < 1 or legume.croissance < 1)]
+    if len(erreur) > 0:
+        feuille.getCellRangeByName('O2').setFormula("Erreur sur les légumes : "+"|".join(erreur))
+        return None
 
-def convertColonneToSemaine(colonne):
-    return (colonne-20) % 52
+    return DicoIntelligent(dictionnaire)
 
 def standardisationNom(nom, typeDeSol, trimestre):
     return sub('[^a-z]', '', (nom.split(':')[0] + typeDeSol).lower()) + str(trimestre)
 
 class Sheet:
-    def __init__(self, oosheet, start2021, errorColor):
+    def __init__(self, oosheet, errorColor):
         self.errorColor = errorColor
-        self.start2021 = start2021
         self.oosheet = oosheet
         if oosheet.Name == "PC":
             self.rangeLine = [
@@ -123,6 +128,18 @@ class Sheet:
                 range(131, 151), range(153, 165), range(168, 178), range(181, 191),
                 range(194, 199), range(202, 220)
             ]
+            self.start2021 = 177
+        elif oosheet.Name == "SA":
+            self.start2021 = 176
+            self.rangeLine = [
+                range(3, 11), range(13, 21), range(24, 29), range(31, 36),
+                range(39, 53),
+            ]
+
+    def convertColonneToSemaine(self, colonne):
+        return (colonne - self.start2021 + 1) % 52
+
+
 
 
     def getColonneYear(self):
@@ -144,4 +161,83 @@ class Sheet:
                         liste.append(cell)
 
         return liste
+
+def getSheetByName(document, name):
+    if document.Sheets.hasByName(name):
+        return document.Sheets.getByName(name)
+    document.Sheets.insertNewByName(name, 0)
+    return document.Sheets.getByName(name)
+
+def addMissingLegumes(sheet, legumes:set):
+    if len(legumes) < 1:
+        return
+    emptyLine = 1
+    while sheet.getCellByPosition(0, emptyLine).String != "":
+        emptyLine += 1
+
+    for (nom, typeDeSol, trimestre) in legumes:
+        sheet.getCellByPosition(0, emptyLine).setFormula(nom)
+        sheet.getCellByPosition(1, emptyLine).setFormula(typeDeSol)
+        sheet.getCellByPosition(2, emptyLine).setFormula(trimestre)
+        emptyLine +=1
+
+
+def processComplet(document):
+    bdd = getSheetByName(document, "base de données")
+    config = getSheetByName(document, "configuration")
+
+    blanc = config.getCellByPosition(0, 0).getPropertyValue('CellBackColor')
+    plantation = config.getCellByPosition(1, 0).getPropertyValue('CellBackColor')
+    croissance = config.getCellByPosition(1, 1).getPropertyValue('CellBackColor')
+    recolte = config.getCellByPosition(1, 2).getPropertyValue('CellBackColor')
+    erreur = config.getCellByPosition(1, 3).getPropertyValue('CellBackColor')
+
+    pcSheet = Sheet(getSheetByName(document, "PC"), erreur)
+    saSheet = Sheet(getSheetByName(document, "SA"), erreur)
+
+    dicoLegume = dictionnaireLegumes(bdd)
+
+    if dicoLegume is None:
+        MessageBox(document, 'Completer la feuille «base de données». Un filtre sur la croissance et la récolte = 0 peut aider', 'Erreur bdd')
+        document.getCurrentController().setActiveSheet(bdd)
+        return None
+
+
+    def coloriser(sheet: Sheet, dicoLegumes):
+        oosheet = sheet.oosheet
+        typeDeSol = oosheet.Name
+        erreurs = {"placePrise": [], "légume inexistant": []}
+        for cell in sheet.getValideCell():
+            colonne = cell.CellAddress.Column
+            ligne = cell.CellAddress.Row
+            currentLegume = dicoLegumes.getInfos(cell.String, typeDeSol, sheet.convertColonneToSemaine(colonne))
+
+            failed = False
+            if currentLegume is None:
+                erreurs["légume inexistant"].append((cell.String, typeDeSol, convertSemaineToTrimestre(sheet.convertColonneToSemaine(colonne))))
+                failed = True
+            else:
+                for i in range(1, currentLegume.aColoriser() + 1):
+                    if oosheet.getCellByPosition(colonne + i, ligne).getPropertyValue('CellBackColor') != blanc:
+                        erreurs["placePrise"].append(cell)
+                        failed = True
+                        cell.setPropertyValue("CellBackColor", erreur)
+                        break
+
+            if failed == False:
+                cell.setPropertyValue("CellBackColor", plantation)
+                dureeCroissance = currentLegume.croissance
+                dureeRecolte = currentLegume.recolte
+                for i in range(1, currentLegume.croissance + 1):
+                    oosheet.getCellByPosition(colonne + i, ligne).setPropertyValue('CellBackColor', croissance)
+                for i in range(dureeCroissance + 1, dureeCroissance + dureeRecolte + 1):
+                    oosheet.getCellByPosition(colonne + i, ligne).setPropertyValue('CellBackColor', recolte)
+
+        erreurs["légume inexistant"] = set(erreurs["légume inexistant"])
+        return erreurs
+    bilanPC = coloriser(pcSheet, dicoLegume)
+    bilanSA = coloriser(saSheet, dicoLegume)
+
+    missingLegumes = bilanSA["légume inexistant"].union(bilanPC["légume inexistant"])
+    addMissingLegumes(bdd, missingLegumes)
 
