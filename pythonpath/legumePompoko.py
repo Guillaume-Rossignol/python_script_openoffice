@@ -203,7 +203,7 @@ def processComplet(document):
         document.getCurrentController().setActiveSheet(bdd)
         return None
 
-    MessageBox(document, 'dico generé', 'Fini')
+    MessageBox(document, 'Lecture de la BDD fait', 'Step 1')
 
 
     def coloriser(sheet: Sheet, dicoLegumes):
@@ -239,16 +239,20 @@ def processComplet(document):
         erreurs["légume inexistant"] = set(erreurs["légume inexistant"])
         return erreurs
     bilanPC = coloriser(pcSheet, dicoLegume)
+    MessageBox(document, 'Feuille PC : traitée', 'Step 2')
+
+
     bilanSA = coloriser(saSheet, dicoLegume)
+    MessageBox(document, 'Feuille SA : traitée', 'Step 3')
 
     missingLegumes = bilanSA["légume inexistant"].union(bilanPC["légume inexistant"])
     if len(missingLegumes) > 0:
         addMissingLegumes(bdd, missingLegumes)
-        MessageBox(document, 'Completer les légumes rajoutés à la feuille', 'Ajout légumes')
+        MessageBox(document, str(len(missingLegumes)) + ' légumes rajoutés à la feuille', 'Ajout légumes')
         document.getCurrentController().setActiveSheet(bdd)
 
     if (len(bilanSA["placePrise"]) + len(bilanPC["placePrise"])) > 0:
-        MessageBox(document, 'Certains légumes n\'ont pas assez de places et ont été mis en rouge', 'Soucis planning')
+        MessageBox(document, str(len(bilanSA["placePrise"]) + len(bilanPC["placePrise"])) + ' légumes n\'ont pas assez de places et ont été mis en rouge', 'Soucis planning')
 
     MessageBox(document, 'Fini', 'Fini')
 
