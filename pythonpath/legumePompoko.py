@@ -143,7 +143,8 @@ class Sheet:
     def convertColonneToSemaine(self, colonne):
         return (colonne - self.start2021 + 1) % 52
 
-
+    def convertColonneToYear(self, colonne):
+        return 2021 + int((colonne - self.start2021 + 1) / 52)
 
 
     def getColonneYear(self):
@@ -209,9 +210,12 @@ def processComplet(document):
     def coloriser(sheet: Sheet, dicoLegumes):
         oosheet = sheet.oosheet
         typeDeSol = oosheet.Name
-        erreurs = {"placePrise": [], "légume inexistant": []}
+        erreurs = {"placePrise": [], "légume inexistant": [], 'ajout': {}}
+
         for cell in sheet.getValideCell():
             colonne = cell.CellAddress.Column
+            year = sheet.convertColonneToYear(colonne)
+            week = sheet.convertColonneToSemaine(colonne)
             ligne = cell.CellAddress.Row
             currentLegume = dicoLegumes.getInfos(cell.String, typeDeSol, sheet.convertColonneToSemaine(colonne))
 
@@ -235,6 +239,16 @@ def processComplet(document):
                     oosheet.getCellByPosition(colonne + i, ligne).setPropertyValue('CellBackColor', croissance)
                 for i in range(dureeCroissance + 1, dureeCroissance + dureeRecolte + 1):
                     oosheet.getCellByPosition(colonne + i, ligne).setPropertyValue('CellBackColor', recolte)
+
+                if year not in erreurs['ajout']:
+                    erreurs['ajout'][year] = {}
+                if currentLegume not in erreurs['ajout'][year]:
+                    erreurs['ajout'][year][currentLegume] = {}
+                if week not in erreurs['ajout'][year][currentLegume]:
+                    erreurs['ajout'][year][currentLegume][week] = 0
+                erreurs['ajout'][year][currentLegume][week] += 1
+
+
 
         erreurs["légume inexistant"] = set(erreurs["légume inexistant"])
         return erreurs
