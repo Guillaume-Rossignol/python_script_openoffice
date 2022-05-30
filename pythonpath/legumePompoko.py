@@ -259,18 +259,19 @@ def processComplet(document):
                 semisDoc = getSheetByName(document, "Semis "+str(year % 2000))
                 emptyLine = 1
                 while semisDoc.getCellByPosition(0, emptyLine).String != "":
-                    emptyLine += 2
+                    emptyLine += 1
+                emptyLine += 1
                 for legume in bilan[site][year]:
                     for week in bilan[site][year][legume]:
                         quantite = bilan[site][year][legume][week]
-                        document.getCellRangeByName("A"+str(emptyLine)).setFormula(legume.nom)
-                        document.getCellRangeByName("C"+str(emptyLine)).setFormula(site)
-                        document.getCellRangeByName("D"+str(emptyLine)).setFormula(week - legume.elevage)
-                        document.getCellRangeByName("F"+str(emptyLine)).setFormula(week)
-                        document.getCellRangeByName("J"+str(emptyLine)).setFormula(quantite)
-                        document.getCellRangeByName("M"+str(emptyLine)).setFormula(legume.densite)
-                        document.getCellRangeByName("N"+str(emptyLine)).setFormula(legume.nbCaisse * quantite)
-                        document.getCellRangeByName("H"+str(emptyLine)).setFormula(legume.croissance +week)
+                        semisDoc.getCellRangeByName("A"+str(emptyLine)).setFormula(legume.nom)
+                        semisDoc.getCellRangeByName("C"+str(emptyLine)).setFormula(site)
+                        semisDoc.getCellRangeByName("D"+str(emptyLine)).setFormula(week - legume.elevage)
+                        semisDoc.getCellRangeByName("F"+str(emptyLine)).setFormula(week)
+                        semisDoc.getCellRangeByName("J"+str(emptyLine)).setFormula(quantite)
+                        semisDoc.getCellRangeByName("K"+str(emptyLine)).setFormula(legume.densite)
+                        semisDoc.getCellRangeByName("N"+str(emptyLine)).setFormula(legume.nbCaisse * quantite)
+                        semisDoc.getCellRangeByName("H"+str(emptyLine)).setFormula(legume.croissance + week)
                         emptyLine += 1
 
     bilanPC = coloriser(pcSheet, dicoLegume)
