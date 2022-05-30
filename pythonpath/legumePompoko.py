@@ -252,11 +252,38 @@ def processComplet(document):
 
         erreurs["légume inexistant"] = set(erreurs["légume inexistant"])
         return erreurs
+
+    def completeSemis(bilan, document):
+        for site in bilan:
+            for year in bilan[site]:
+                semisDoc = getSheetByName(document, "Semis "+str(year % 2000))
+                emptyLine = 1
+                while semisDoc.getCellByPosition(0, emptyLine).String != "":
+                    emptyLine += 2
+                for legume in bilan[site][year]:
+                    for week in bilan[site][year][legume]:
+                        quantite = bilan[site][year][legume][week]
+                        document.getCellRangeByName("A"+str(emptyLine)).setFormula(legume.nom)
+                        document.getCellRangeByName("C"+str(emptyLine)).setFormula(site)
+                        document.getCellRangeByName("D"+str(emptyLine)).setFormula(week - legume.elevage)
+                        document.getCellRangeByName("F"+str(emptyLine)).setFormula(week)
+                        document.getCellRangeByName("J"+str(emptyLine)).setFormula(quantite)
+                        document.getCellRangeByName("M"+str(emptyLine)).setFormula(legume.densite)
+                        document.getCellRangeByName("N"+str(emptyLine)).setFormula(legume.nbCaisse * quantite)
+                        document.getCellRangeByName("H"+str(emptyLine)).setFormula(legume.croissance +week)
+                        emptyLine += 1
+
     bilanPC = coloriser(pcSheet, dicoLegume)
     MessageBox(document, 'Feuille PC : traitée', 'Step 2')
 
 
     bilanSA = coloriser(saSheet, dicoLegume)
+
+    bilanAjout = {
+        'PC': bilanPC['ajout'],
+        'SA': bilanSA['ajout']
+    }
+    completeSemis(bilanAjout, document)
     MessageBox(document, 'Feuille SA : traitée', 'Step 3')
 
     missingLegumes = bilanSA["légume inexistant"].union(bilanPC["légume inexistant"])
